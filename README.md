@@ -12,7 +12,7 @@ To get started with this project, follow these steps:
    git clone https://github.com/yourusername/FlashStudy-AI.git
    cd FlashStudy-AI
    
-2 **Install dependencies:**
+2.**Install dependencies:**
 
 bash
 npm install
