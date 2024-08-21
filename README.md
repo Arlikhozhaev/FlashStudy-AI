@@ -12,18 +12,18 @@ To get started with this project, follow these steps:
    git clone https://github.com/yourusername/FlashStudy-AI.git
    cd FlashStudy-AI
    
-Install dependencies:
+2 **Install dependencies:**
 
 bash
 npm install
-# or
+or
 yarn install
-# or
+or
 pnpm install
-# or
+or
 bun install
 
-Run the development server:
+3. **Run the development server:**
 
 bash
 npm run dev
@@ -34,25 +34,23 @@ pnpm dev
 # or
 bun dev
 
-Open http://localhost:3000 with your browser to see the result.
+4 **Open http://localhost:3000 with your browser to see the result.**
 
-Usage
+
+**Usage**
 You can start editing the page by modifying app/page.js. The page will automatically update as you make changes.
 This project uses next/font to automatically optimize and load Inter, a custom Google Font.
 
-Learn More
+**Learn More**
 To learn more about Next.js, take a look at the following resources:
 Next.js Documentation - Learn about Next.js features and API.
 Learn Next.js - An interactive Next.js tutorial.
 Next.js GitHub Repository - View the source code and contribute.
 
-Deploy on Vercel
+**Deploy on Vercel**
 The easiest way to deploy your Next.js app is to use the Vercel Platform.
 Check out our Next.js deployment documentation for more details.
 
-Contributing
-We welcome contributions to this project! Please fork the repository, create a new branch, and submit a pull request with your changes.
+**Contributing**
+I welcome contributions to this project! Please fork the repository, create a new branch, and submit a pull request with your changes.
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
-Feel free to replace `https://github.com/yourusername/FlashStudy-AI.git` with the actual URL of your repository and adjust any other details as necessary.
