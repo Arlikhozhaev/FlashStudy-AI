@@ -1,7 +1,11 @@
 "use client";
 
 import LoadingScreen from "@/components/LoadingScreen";
-import { Box, Container, Typography } from "@mui/material";
+import { PageContainer } from "@/components/PageHeader";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
+import { Box, Button, Paper, Typography } from "@mui/material";
+import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -50,37 +54,54 @@ function ResultContent() {
     return <LoadingScreen message="Verifying payment..." />;
   }
 
-  if (error) {
-    return (
-      <Container maxWidth="md" sx={{ textAlign: "center", py: 6 }}>
-        <Typography variant="h5" gutterBottom>
-          Payment verification failed
-        </Typography>
-        <Typography color="text.secondary">{error}</Typography>
-      </Container>
-    );
-  }
-
   const paid = session?.payment_status === "paid";
 
   return (
-    <Container maxWidth="md" sx={{ textAlign: "center", py: 6 }}>
-      <Typography variant="h4" gutterBottom>
-        {paid ? "Thank you for subscribing" : "Payment incomplete"}
-      </Typography>
-      <Box sx={{ mt: 3 }}>
-        {sessionId && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Session ID: {sessionId}
-          </Typography>
+    <PageContainer maxWidth="sm">
+      <Paper
+        sx={{
+          p: { xs: 4, md: 5 },
+          textAlign: "center",
+          boxShadow: "var(--shadow-soft)",
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        {error ? (
+          <>
+            <ErrorOutlineRoundedIcon color="error" sx={{ fontSize: 56, mb: 2 }} />
+            <Typography variant="h4" gutterBottom>
+              Payment verification failed
+            </Typography>
+            <Typography color="text.secondary">{error}</Typography>
+          </>
+        ) : (
+          <>
+            {paid ? (
+              <CheckCircleRoundedIcon color="success" sx={{ fontSize: 56, mb: 2 }} />
+            ) : (
+              <ErrorOutlineRoundedIcon color="warning" sx={{ fontSize: 56, mb: 2 }} />
+            )}
+            <Typography variant="h4" gutterBottom>
+              {paid ? "Subscription activated" : "Payment incomplete"}
+            </Typography>
+            <Typography color="text.secondary" sx={{ mb: 3 }}>
+              {paid
+                ? "Your plan is now active. Usage limits will apply based on the tier you selected."
+                : "Your payment was not completed. You can return to pricing and try again."}
+            </Typography>
+            <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
+              <Button component={Link} href="/generate" variant="contained">
+                Start Generating
+              </Button>
+              <Button component={Link} href="/#pricing" variant="outlined">
+                Back to Pricing
+              </Button>
+            </Box>
+          </>
         )}
-        <Typography variant="body1">
-          {paid
-            ? "Your payment was received successfully. Subscription access will be activated shortly."
-            : "Your payment was not completed. You can return to pricing and try again."}
-        </Typography>
-      </Box>
-    </Container>
+      </Paper>
+    </PageContainer>
   );
 }
 

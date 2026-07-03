@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getServerEnv } from "@/lib/env";
+import { handleStripeEvent } from "@/lib/stripe-webhooks";
 import { getStripeClient } from "@/lib/stripe";
 
 export async function POST(req: Request) {
@@ -37,15 +38,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  switch (event.type) {
-    case "checkout.session.completed":
-    case "customer.subscription.updated":
-    case "customer.subscription.deleted":
-      // Persist subscription state in your database here.
-      console.info(`Processed Stripe event: ${event.type}`);
-      break;
-    default:
-      console.info(`Unhandled Stripe event type: ${event.type}`);
+  try {
+    await handleStripeEvent(event);
+  } catch (error) {
+    console.error("Stripe webhook handler failed:", error);
+    return NextResponse.json(
+      { error: "Webhook handler failed" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ received: true });

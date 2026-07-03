@@ -2,15 +2,18 @@
 
 import FlashcardGrid from "@/components/FlashcardGrid";
 import LoadingScreen from "@/components/LoadingScreen";
+import PageHeader, { PageContainer } from "@/components/PageHeader";
+import UsageMeter from "@/components/UsageMeter";
 import { saveCollectionSchema } from "@/lib/validation";
+import type { SubscriptionSummary } from "@/lib/plans";
 import type { Flashcard } from "@/types/flashcard";
 import { useUser } from "@clerk/nextjs";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,10 +21,10 @@ import {
   DialogTitle,
   Paper,
   TextField,
-  Typography,
 } from "@mui/material";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function GeneratePage() {
   const { isLoaded, isSignedIn } = useUser();
@@ -32,7 +35,26 @@ export default function GeneratePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionSummary | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    async function loadSubscription() {
+      try {
+        const response = await fetch("/api/subscription");
+        if (response.ok) {
+          setSubscription(await response.json());
+        }
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    }
+
+    if (isSignedIn) {
+      loadSubscription();
+    }
+  }, [isSignedIn]);
 
   if (!isLoaded) {
     return <LoadingScreen message="Checking authentication..." />;
@@ -58,10 +80,17 @@ export default function GeneratePage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.subscription) {
+          setSubscription(data.subscription);
+        }
+
         throw new Error(data.error ?? "Failed to generate flashcards");
       }
 
       setFlashcards(data.flashcards ?? []);
+      if (data.subscription) {
+        setSubscription(data.subscription);
+      }
     } catch (submitError) {
       const message =
         submitError instanceof Error
@@ -116,63 +145,84 @@ export default function GeneratePage() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ pb: 6 }}>
-      <Box
+    <PageContainer maxWidth="md">
+      <PageHeader
+        eyebrow="AI Generator"
+        title="Generate flashcards"
+        description="Paste your study material and create a polished deck with enforced plan limits and validated output."
+      />
+
+      <UsageMeter summary={subscription} loading={subscriptionLoading} />
+
+      <Paper
         sx={{
-          mt: 4,
-          mb: 6,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          p: { xs: 3, md: 4 },
+          boxShadow: "var(--shadow-soft)",
+          border: "1px solid",
+          borderColor: "divider",
         }}
       >
-        <Typography variant="h4" gutterBottom>
-          Generate Flashcards
-        </Typography>
-        <Paper sx={{ p: 4, width: "100%" }}>
-          <TextField
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            label="Enter study text"
-            fullWidth
-            multiline
-            rows={6}
-            variant="outlined"
+        <TextField
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          label="Study text"
+          fullWidth
+          multiline
+          rows={8}
+          variant="outlined"
+          sx={{ mb: 2 }}
+          helperText="Paste notes or study material (10-10,000 characters)."
+        />
+
+        {error && (
+          <Alert
+            severity="error"
             sx={{ mb: 2 }}
-            helperText="Paste notes or study material (10-10,000 characters)."
-          />
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-            fullWidth
-            disabled={isGenerating || text.trim().length < 10}
-            startIcon={
-              isGenerating ? <CircularProgress size={18} color="inherit" /> : undefined
+            action={
+              error.includes("subscription") || error.includes("limit") ? (
+                <Button color="inherit" size="small" component={Link} href="/#pricing">
+                  Upgrade
+                </Button>
+              ) : undefined
             }
           >
-            {isGenerating ? "Generating..." : "Generate Flashcards"}
-          </Button>
-        </Paper>
-      </Box>
+            {error}
+          </Alert>
+        )}
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSubmit}
+          fullWidth
+          size="large"
+          disabled={
+            isGenerating ||
+            text.trim().length < 10 ||
+            subscription?.canGenerate === false
+          }
+          startIcon={
+            isGenerating ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <AutoAwesomeRoundedIcon />
+            )
+          }
+        >
+          {isGenerating ? "Generating..." : "Generate Flashcards"}
+        </Button>
+      </Paper>
 
       {flashcards.length > 0 && (
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            Flashcards Preview
-          </Typography>
+        <Box sx={{ mt: 5 }}>
+          <PageHeader
+            eyebrow="Preview"
+            title="Your generated deck"
+            description="Review the cards below, then save them to your library."
+          />
           <FlashcardGrid flashcards={flashcards} />
           <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => setOpen(true)}
-            >
+            <Button variant="contained" color="secondary" size="large" onClick={() => setOpen(true)}>
               Save Collection
             </Button>
           </Box>
@@ -205,6 +255,6 @@ export default function GeneratePage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </PageContainer>
   );
 }

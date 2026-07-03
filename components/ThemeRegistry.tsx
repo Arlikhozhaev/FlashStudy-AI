@@ -2,18 +2,59 @@
 
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useServerInsertedHTML } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 const theme = createTheme({
   palette: {
+    mode: "light",
     primary: {
-      main: "#1e88e5",
+      main: "#4f46e5",
+      light: "#818cf8",
+      dark: "#3730a3",
     },
     secondary: {
-      main: "#5e35b1",
+      main: "#06b6d4",
+      light: "#67e8f9",
+      dark: "#0891b2",
+    },
+    background: {
+      default: "#f8fafc",
+      paper: "#ffffff",
+    },
+    text: {
+      primary: "#0f172a",
+      secondary: "#475569",
+    },
+  },
+  shape: {
+    borderRadius: 16,
+  },
+  typography: {
+    fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
+    h1: { fontWeight: 800, letterSpacing: "-0.03em" },
+    h2: { fontWeight: 800, letterSpacing: "-0.03em" },
+    h3: { fontWeight: 700, letterSpacing: "-0.02em" },
+    h4: { fontWeight: 700, letterSpacing: "-0.02em" },
+    button: { textTransform: "none", fontWeight: 600 },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 999,
+          paddingInline: 24,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: "none",
+        },
+      },
     },
   },
 });

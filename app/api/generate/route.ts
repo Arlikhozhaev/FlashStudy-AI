@@ -3,9 +3,17 @@ import { NextResponse } from "next/server";
 import { jsonError, jsonServerError } from "@/lib/api";
 import { getOpenAIClient, FLASHCARD_SYSTEM_PROMPT } from "@/lib/openai";
 import {
+  assertCanGenerate,
+  getUserSubscriptionSummary,
+  recordFlashcardUsage,
+  SubscriptionError,
+} from "@/lib/subscription";
+import {
   flashcardsResponseSchema,
   generateFlashcardsSchema,
 } from "@/lib/validation";
+
+const ESTIMATED_FLASHCARDS_PER_GENERATION = 9;
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -26,6 +34,22 @@ export async function POST(req: Request) {
 
   if (!parsedInput.success) {
     return jsonError(parsedInput.error.issues[0]?.message ?? "Invalid input");
+  }
+
+  try {
+    await assertCanGenerate(userId, ESTIMATED_FLASHCARDS_PER_GENERATION);
+  } catch (error) {
+    if (error instanceof SubscriptionError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          subscription: error.summary,
+        },
+        { status: error.status },
+      );
+    }
+
+    throw error;
   }
 
   try {
@@ -53,7 +77,34 @@ export async function POST(req: Request) {
       return jsonServerError("Model returned an invalid flashcard payload");
     }
 
-    return NextResponse.json(parsedResponse.data);
+    const generatedCount = parsedResponse.data.flashcards.length;
+    const summary = await getUserSubscriptionSummary(userId);
+
+    if (
+      summary.limit !== null &&
+      summary.usage.flashcardsGenerated + generatedCount > summary.limit
+    ) {
+      return NextResponse.json(
+        {
+          error: `This generation would exceed your ${summary.subscription.plan} plan limit of ${summary.limit} flashcards.`,
+          subscription: summary,
+        },
+        { status: 429 },
+      );
+    }
+
+    await recordFlashcardUsage(
+      userId,
+      generatedCount,
+      summary.subscription.currentPeriodStart,
+    );
+
+    const updatedSummary = await getUserSubscriptionSummary(userId);
+
+    return NextResponse.json({
+      ...parsedResponse.data,
+      subscription: updatedSummary,
+    });
   } catch (error) {
     console.error("Generate API error:", error);
     return jsonServerError("Failed to generate flashcards");

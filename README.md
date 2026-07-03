@@ -6,9 +6,20 @@ AI-powered flashcard SaaS built with Next.js 14, Clerk, Firebase Firestore, Open
 
 - Clerk authentication with protected routes and API endpoints
 - AI flashcard generation from study text via OpenAI
-- Firestore-backed flashcard collection storage
-- Stripe subscription checkout with webhook endpoint
-- TypeScript, input validation, shared UI components, and CI
+- **Enforced subscription tiers** with billing-period usage tracking
+- Firestore-backed flashcard collection storage via Firebase Admin SDK
+- Stripe checkout + webhook-driven subscription sync
+- Polished UI, TypeScript, validation, unit tests, Playwright E2E, and CI
+
+## Subscription Tiers
+
+| Plan | Price | Flashcard Limit |
+| --- | --- | --- |
+| Basic | $4.99 / month | 100 flashcards per billing period |
+| Standard | $7.99 / month | Unlimited |
+| Premium | $9.99 / month | Unlimited |
+
+Generation is blocked unless the user has an active subscription. Basic plan usage resets each Stripe billing period.
 
 ## Tech Stack
 
@@ -18,6 +29,8 @@ AI-powered flashcard SaaS built with Next.js 14, Clerk, Firebase Firestore, Open
 - **AI:** OpenAI
 - **Payments:** Stripe
 - **UI:** Material UI
+- **Testing:** Vitest + Playwright
+- **Deployment:** Vercel
 
 ## Getting Started
 
@@ -30,8 +43,6 @@ npm install --legacy-peer-deps
 ```
 
 ### 2. Configure environment variables
-
-Copy the example file and fill in your credentials:
 
 ```bash
 cp .env.example .env.local
@@ -46,6 +57,7 @@ Required variables:
 | `OPENAI_API_KEY` | OpenAI API key |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
 | `STRIPE_SECRET_KEY` | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
 | `FIREBASE_PROJECT_ID` | Firebase Admin project ID |
 | `FIREBASE_CLIENT_EMAIL` | Firebase service account email |
 | `FIREBASE_PRIVATE_KEY` | Firebase service account private key |
@@ -54,8 +66,9 @@ Optional:
 
 | Variable | Description |
 | --- | --- |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
-| `NEXT_PUBLIC_STRIPE_*_PRICE_ID` | Stripe price IDs for each plan |
+| `NEXT_PUBLIC_STRIPE_BASIC_PRICE_ID` | Stripe price ID for Basic |
+| `NEXT_PUBLIC_STRIPE_STANDARD_PRICE_ID` | Stripe price ID for Standard |
+| `NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID` | Stripe price ID for Premium |
 
 ### 3. Run locally
 
@@ -74,18 +87,40 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
 | `npm run test` | Run unit tests |
+| `npm run test:e2e` | Run Playwright E2E tests locally with real env vars |
 | `npm run typecheck` | Run TypeScript checks |
+
+## Deploy on Vercel
+
+1. Import the GitHub repository into [Vercel](https://vercel.com/new).
+2. Set the install command to `npm ci --legacy-peer-deps`.
+3. Add all environment variables from `.env.example`.
+4. Deploy the app.
+5. In Stripe, create a webhook endpoint pointing to:
+   `https://your-domain.vercel.app/api/webhooks/stripe`
+6. Subscribe to:
+   - `checkout.session.completed`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+7. Copy the webhook signing secret into `STRIPE_WEBHOOK_SECRET` in Vercel.
+8. Redeploy after env updates.
+
+For local webhook testing:
+
+```bash
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
 
 ## Project Structure
 
 ```text
 app/                 Next.js routes and API handlers
 components/          Shared UI components
-lib/                 Env, Firebase, OpenAI, Stripe, validation
+lib/                 Plans, subscriptions, env, Firebase, Stripe, OpenAI
 types/               Shared TypeScript types
-utils/               Client utilities
+e2e/                 Playwright end-to-end tests
 __tests__/           Unit tests
-firestore.rules      Firestore security rules template
+firestore.rules      Firestore security rules
 ```
 
 ## Security Notes
@@ -93,22 +128,14 @@ firestore.rules      Firestore security rules template
 - Secrets must live in environment variables, never in source code.
 - Protected routes are enforced in `middleware.ts`.
 - API routes require Clerk authentication.
-- Deploy `firestore.rules` and tighten access before production launch.
-- Configure the Stripe webhook endpoint at `/api/webhooks/stripe`.
-
-## Deployment
-
-Deploy to Vercel or any Node.js host that supports Next.js 14.
-
-1. Add all environment variables in your hosting provider.
-2. Connect Stripe webhook events to `/api/webhooks/stripe`.
-3. Deploy Firestore security rules from `firestore.rules`.
+- Firestore client access is denied; all reads/writes go through server routes.
+- Stripe webhooks verify signatures before updating subscription state.
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Run `npm run lint`, `npm run test`, and `npm run build`
+3. Run `npm run lint`, `npm run typecheck`, `npm run test`, and `npm run build`
 4. Open a pull request
 
 ## License

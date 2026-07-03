@@ -1,7 +1,4 @@
-import {
-  clerkMiddleware,
-  createRouteMatcher,
-} from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher([
   "/generate(.*)",
@@ -11,6 +8,7 @@ const isProtectedRoute = createRouteMatcher([
   "/api/generate(.*)",
   "/api/checkout_sessions(.*)",
   "/api/flashcards(.*)",
+  "/api/subscription(.*)",
 ]);
 
 export default clerkMiddleware((auth, request) => {

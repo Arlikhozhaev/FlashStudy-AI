@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import Navbar from "@/components/Navbar";
-import ThemeRegistry from "@/components/ThemeRegistry";
+import AppProviders from "@/components/AppProviders";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: "%s | FlashStudy AI",
   },
   description:
-    "AI-powered flashcard SaaS for turning study notes into effective review decks.",
+    "AI-powered flashcard SaaS with subscription tiers, secure backend architecture, and polished study workflows.",
 };
 
 export default function RootLayout({
@@ -23,17 +23,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <ThemeRegistry>
-            <ErrorBoundary>
-              <Navbar />
-              {children}
-            </ErrorBoundary>
-          </ThemeRegistry>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <AppProviders>{children}</AppProviders>
+      </body>
+    </html>
   );
 }

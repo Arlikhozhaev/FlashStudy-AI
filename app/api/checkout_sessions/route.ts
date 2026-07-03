@@ -1,12 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { jsonError, jsonServerError } from "@/lib/api";
+import { isPlanName, PLANS, type PlanName } from "@/lib/plans";
 import { formatAmountForStripe, getStripeClient } from "@/lib/stripe";
-
-const DEFAULT_PLAN = {
-  name: "Premium",
-  amount: 9.99,
-};
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -38,9 +34,15 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    // Fall back to default plan when no body is provided.
+    return jsonError("Invalid JSON body");
   }
 
+  if (!body.planName || !isPlanName(body.planName)) {
+    return jsonError("A valid planName is required");
+  }
+
+  const planName = body.planName as PlanName;
+  const plan = PLANS[planName];
   const origin = req.headers.get("origin");
 
   if (!origin) {
@@ -56,9 +58,10 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: body.planName ?? DEFAULT_PLAN.name,
+              name: `${plan.name} Subscription`,
+              description: plan.description,
             },
-            unit_amount: formatAmountForStripe(DEFAULT_PLAN.amount),
+            unit_amount: formatAmountForStripe(plan.price),
             recurring: {
               interval: "month" as const,
               interval_count: 1,
@@ -72,12 +75,18 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card"],
       line_items: [lineItem],
       client_reference_id: userId,
+      subscription_data: {
+        metadata: {
+          userId,
+          planName,
+        },
+      },
       metadata: {
         userId,
-        planName: body.planName ?? DEFAULT_PLAN.name,
+        planName,
       },
       success_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/result?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?checkout=canceled`,
     });
 
     return NextResponse.json({ id: checkoutSession.id });

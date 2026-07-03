@@ -2,9 +2,11 @@
 
 import FlashcardGrid from "@/components/FlashcardGrid";
 import LoadingScreen from "@/components/LoadingScreen";
+import PageHeader, { PageContainer } from "@/components/PageHeader";
 import type { FlashcardDocument } from "@/types/flashcard";
 import { useUser } from "@clerk/nextjs";
-import { Alert, Container, Typography } from "@mui/material";
+import { Alert, Button } from "@mui/material";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -54,17 +56,24 @@ function FlashcardContent() {
 
   if (!collectionId) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <PageContainer>
         <Alert severity="warning">No flashcard collection was selected.</Alert>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        {collectionId}
-      </Typography>
+    <PageContainer>
+      <PageHeader
+        eyebrow="Review Mode"
+        title={collectionId}
+        description="Tap any card to flip between the prompt and answer."
+        action={
+          <Button component={Link} href="/flashcards" variant="outlined">
+            Back to Decks
+          </Button>
+        }
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -73,16 +82,14 @@ function FlashcardContent() {
       )}
 
       {flashcards.length === 0 && !error ? (
-        <Typography color="text.secondary">
-          This collection is empty.
-        </Typography>
+        <Alert severity="info">This collection is empty.</Alert>
       ) : (
         <FlashcardGrid
           flashcards={flashcards}
           getKey={(flashcard, index) => flashcard.id ?? index}
         />
       )}
-    </Container>
+    </PageContainer>
   );
 }
 
