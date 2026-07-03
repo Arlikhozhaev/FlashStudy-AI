@@ -6,23 +6,36 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.3.1",
+    "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.16.7",
     "@stripe/stripe-js": "^4.3.0",
-    "firebase": "^10.13.0",
+    "firebase-admin": "^14.1.0",
     "next": "14.2.5",
     "openai": "^4.56.0",
     "react": "^18",
     "react-dom": "^18",
-    "stripe": "^16.8.0"
+    "stripe": "^16.8.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/node": "^26.1.0",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^8",
-    "eslint-config-next": "14.2.5"
+    "eslint-config-next": "14.2.5",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   }
 }
