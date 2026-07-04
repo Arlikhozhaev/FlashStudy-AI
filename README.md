@@ -87,8 +87,22 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
 | `npm run test` | Run unit tests |
-| `npm run test:e2e` | Run Playwright E2E tests locally with real env vars |
+| `npm run test:e2e` | Run Playwright E2E tests (auto-starts dev server) |
+| `npm run test:e2e:ui` | Run Playwright with interactive UI |
 | `npm run typecheck` | Run TypeScript checks |
+
+### E2E tests locally
+
+Playwright will automatically start `npm run dev` on port 3000 (or reuse an existing server).
+
+1. Ensure `.env.local` is configured with your real Clerk/Stripe/Firebase/OpenAI keys.
+2. Run:
+
+```bash
+npm run test:e2e
+```
+
+If you prefer to start the server yourself, run `npm run dev` in one terminal, then `npm run test:e2e` in another.
 
 ## Deploy on Vercel
 
