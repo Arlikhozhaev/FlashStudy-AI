@@ -33,29 +33,20 @@ export default function Footer() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: "flex", gap: 4 }}>
-            <Box>
-              <Typography fontWeight={700} gutterBottom>
-                Product
-              </Typography>
-              <Box sx={{ display: "grid", gap: 1 }}>
-                <Link component={NextLink} href="/generate" underline="hover">
-                  Generate
-                </Link>
-                <Link component={NextLink} href="/flashcards" underline="hover">
-                  My Decks
-                </Link>
-                <Link component={NextLink} href="/#pricing" underline="hover">
-                  Pricing
-                </Link>
-              </Box>
-            </Box>
-            <Box>
-              <Typography fontWeight={700} gutterBottom>
-                Stack
-              </Typography>
-              <Typography color="text.secondary">Next.js · Clerk · Stripe</Typography>
-              <Typography color="text.secondary">OpenAI · Firebase · Vercel</Typography>
+          <Box>
+            <Typography fontWeight={700} gutterBottom>
+              Product
+            </Typography>
+            <Box sx={{ display: "grid", gap: 1 }}>
+              <Link component={NextLink} href="/generate" underline="hover">
+                Generate
+              </Link>
+              <Link component={NextLink} href="/flashcards" underline="hover">
+                My Decks
+              </Link>
+              <Link component={NextLink} href="/#pricing" underline="hover">
+                Pricing
+              </Link>
             </Box>
           </Box>
         </Box>

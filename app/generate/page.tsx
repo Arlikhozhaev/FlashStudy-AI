@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { parseApiResponse } from "@/utils/parse-api-response";
 
 export default function GeneratePage() {
   const { isLoaded, isSignedIn } = useUser();
@@ -44,8 +45,10 @@ export default function GeneratePage() {
       try {
         const response = await fetch("/api/subscription");
         if (response.ok) {
-          setSubscription(await response.json());
+          setSubscription(await parseApiResponse<SubscriptionSummary>(response));
         }
+      } catch (loadError) {
+        console.error("Failed to load subscription:", loadError);
       } finally {
         setSubscriptionLoading(false);
       }
@@ -77,7 +80,11 @@ export default function GeneratePage() {
         },
       });
 
-      const data = await response.json();
+      const data = await parseApiResponse<{
+        flashcards?: Flashcard[];
+        subscription?: SubscriptionSummary;
+        error?: string;
+      }>(response);
 
       if (!response.ok) {
         if (data.subscription) {
@@ -125,7 +132,7 @@ export default function GeneratePage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await parseApiResponse<{ error?: string }>(response);
 
       if (!response.ok) {
         throw new Error(data.error ?? "Failed to save flashcards");

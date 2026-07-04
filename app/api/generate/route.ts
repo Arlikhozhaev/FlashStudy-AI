@@ -15,44 +15,58 @@ import {
 
 const ESTIMATED_FLASHCARDS_PER_GENERATION = 9;
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 export async function POST(req: Request) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return jsonError("Unauthorized", 401);
-  }
-
-  let body: unknown;
-
   try {
-    body = await req.json();
-  } catch {
-    return jsonError("Invalid JSON body");
-  }
+    const { userId } = await auth();
 
-  const parsedInput = generateFlashcardsSchema.safeParse(body);
+    if (!userId) {
+      return jsonError("Unauthorized", 401);
+    }
 
-  if (!parsedInput.success) {
-    return jsonError(parsedInput.error.issues[0]?.message ?? "Invalid input");
-  }
+    let body: unknown;
 
-  try {
-    await assertCanGenerate(userId, ESTIMATED_FLASHCARDS_PER_GENERATION);
-  } catch (error) {
-    if (error instanceof SubscriptionError) {
-      return NextResponse.json(
-        {
-          error: error.message,
-          subscription: error.summary,
-        },
-        { status: error.status },
+    try {
+      body = await req.json();
+    } catch {
+      return jsonError("Invalid JSON body");
+    }
+
+    const parsedInput = generateFlashcardsSchema.safeParse(body);
+
+    if (!parsedInput.success) {
+      return jsonError(parsedInput.error.issues[0]?.message ?? "Invalid input");
+    }
+
+    try {
+      await assertCanGenerate(userId, ESTIMATED_FLASHCARDS_PER_GENERATION);
+    } catch (error) {
+      if (error instanceof SubscriptionError) {
+        return NextResponse.json(
+          {
+            error: error.message,
+            subscription: error.summary,
+          },
+          { status: error.status },
+        );
+      }
+
+      console.error("Subscription check failed:", error);
+      return jsonServerError(
+        getErrorMessage(
+          error,
+          "Unable to verify subscription. Check Firebase credentials in `.env.local`.",
+        ),
       );
     }
 
-    throw error;
-  }
-
-  try {
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -69,9 +83,15 @@ export async function POST(req: Request) {
       return jsonServerError("Model returned an empty response");
     }
 
-    const parsedResponse = flashcardsResponseSchema.safeParse(
-      JSON.parse(responseContent),
-    );
+    let parsedJson: unknown;
+
+    try {
+      parsedJson = JSON.parse(responseContent);
+    } catch {
+      return jsonServerError("Model returned malformed JSON");
+    }
+
+    const parsedResponse = flashcardsResponseSchema.safeParse(parsedJson);
 
     if (!parsedResponse.success) {
       return jsonServerError("Model returned an invalid flashcard payload");
@@ -107,6 +127,24 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("Generate API error:", error);
-    return jsonServerError("Failed to generate flashcards");
+
+    const message = getErrorMessage(error, "Failed to generate flashcards");
+
+    if (
+      message.includes("OPENAI_API_KEY") ||
+      message.includes("environment configuration")
+    ) {
+      return jsonServerError(
+        "OpenAI is not configured. Add `OPENAI_API_KEY` to `.env.local`.",
+      );
+    }
+
+    if (message.includes("Firebase")) {
+      return jsonServerError(
+        "Firebase is not configured correctly. Check `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` in `.env.local`.",
+      );
+    }
+
+    return jsonServerError(message);
   }
 }
