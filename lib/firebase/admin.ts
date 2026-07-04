@@ -53,7 +53,7 @@ function getAdminApp(): App {
 
 export function getAdminDb(): Firestore {
   if (!adminDb) {
-    adminDb = getFirestore(getAdminApp());
+    adminDb = getFirestore(getAdminApp(), "(default)");
   }
 
   return adminDb;

@@ -3,6 +3,13 @@ export function formatFirebaseError(error: unknown): string {
     error instanceof Error ? error.message : "Unknown Firebase error";
 
   if (
+    message.includes("NOT_FOUND") ||
+    message.includes("5 NOT_FOUND")
+  ) {
+    return "Firestore database not found. In Firebase Console open Build → Firestore Database → Create database (Production mode). Also confirm FIREBASE_PROJECT_ID in Vercel matches the project where you created the database.";
+  }
+
+  if (
     message.includes("SERVICE_DISABLED") ||
     message.includes("has not been used in project") ||
     message.includes("PERMISSION_DENIED")
