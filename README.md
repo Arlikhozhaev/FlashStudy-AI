@@ -15,11 +15,12 @@ AI-powered flashcard SaaS built with Next.js 14, Clerk, Firebase Firestore, Open
 
 | Plan | Price | Flashcard Limit |
 | --- | --- | --- |
-| Basic | $4.99 / month | 100 flashcards per billing period |
-| Standard | $7.99 / month | Unlimited |
-| Premium | $9.99 / month | Unlimited |
+| **Free Trial** | $0 for 7 days | 2 generations per day |
+| **Basic** | $4.99 / month | 100 flashcards per billing period |
+| **Standard** | $7.99 / month | Unlimited |
+| **Premium** | $9.99 / month | Unlimited |
 
-Generation is blocked unless the user has an active subscription. Basic plan usage resets each Stripe billing period.
+New users automatically receive a 7-day free trial with up to 2 flashcard generations per day. After the trial ends, a paid subscription is required. Paid plan usage limits apply once subscribed.
 
 ## Tech Stack
 
@@ -87,8 +88,22 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
 | `npm run test` | Run unit tests |
-| `npm run test:e2e` | Run Playwright E2E tests locally with real env vars |
+| `npm run test:e2e` | Run Playwright E2E tests (auto-starts dev server) |
+| `npm run test:e2e:ui` | Run Playwright with interactive UI |
 | `npm run typecheck` | Run TypeScript checks |
+
+### E2E tests locally
+
+Playwright will automatically start `npm run dev` on port 3000 (or reuse an existing server).
+
+1. Ensure `.env.local` is configured with your real Clerk/Stripe/Firebase/OpenAI keys.
+2. Run:
+
+```bash
+npm run test:e2e
+```
+
+If you prefer to start the server yourself, run `npm run dev` in one terminal, then `npm run test:e2e` in another.
 
 ## Deploy on Vercel
 
