@@ -15,11 +15,12 @@ AI-powered flashcard SaaS built with Next.js 14, Clerk, Firebase Firestore, Open
 
 | Plan | Price | Flashcard Limit |
 | --- | --- | --- |
-| Basic | $4.99 / month | 100 flashcards per billing period |
-| Standard | $7.99 / month | Unlimited |
-| Premium | $9.99 / month | Unlimited |
+| **Free Trial** | $0 for 7 days | 2 generations per day |
+| **Basic** | $4.99 / month | 100 flashcards per billing period |
+| **Standard** | $7.99 / month | Unlimited |
+| **Premium** | $9.99 / month | Unlimited |
 
-Generation is blocked unless the user has an active subscription. Basic plan usage resets each Stripe billing period.
+New users automatically receive a 7-day free trial with up to 2 flashcard generations per day. After the trial ends, a paid subscription is required. Paid plan usage limits apply once subscribed.
 
 ## Tech Stack
 

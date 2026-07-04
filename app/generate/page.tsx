@@ -186,9 +186,11 @@ export default function GeneratePage() {
             severity="error"
             sx={{ mb: 2 }}
             action={
-              error.includes("subscription") || error.includes("limit") ? (
+              error.includes("subscription") ||
+              error.includes("limit") ||
+              error.includes("trial") ? (
                 <Button color="inherit" size="small" component={Link} href="/#pricing">
-                  Upgrade
+                  View Plans
                 </Button>
               ) : undefined
             }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { SubscriptionSummary } from "@/lib/plans";
+import { TRIAL_DAILY_GENERATION_LIMIT } from "@/lib/plans";
 import {
   Alert,
   Box,
@@ -22,7 +23,7 @@ export default function UsageMeter({ summary, loading = false }: UsageMeterProps
     return (
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          Loading subscription usage...
+          Loading usage...
         </Typography>
         <LinearProgress />
       </Paper>
@@ -33,14 +34,18 @@ export default function UsageMeter({ summary, loading = false }: UsageMeterProps
     return null;
   }
 
-  const { subscription, usage, limit, remaining, canGenerate } = summary;
-  const active = subscription.status === "active" || subscription.status === "trialing";
-  const progress =
-    limit === null || limit === 0
-      ? 0
-      : Math.min((usage.flashcardsGenerated / limit) * 100, 100);
+  const {
+    accessMode,
+    subscription,
+    usage,
+    dailyUsage,
+    limit,
+    remaining,
+    canGenerate,
+    trialDaysRemaining,
+  } = summary;
 
-  if (!active || !subscription.plan) {
+  if (accessMode === "expired") {
     return (
       <Alert
         severity="warning"
@@ -51,10 +56,88 @@ export default function UsageMeter({ summary, loading = false }: UsageMeterProps
           </Button>
         }
       >
-        You need an active subscription to generate flashcards.
+        Your 7-day free trial has ended. Subscribe to keep generating flashcards.
       </Alert>
     );
   }
+
+  if (accessMode === "free_trial") {
+    const progress =
+      limit === null || limit === 0
+        ? 0
+        : Math.min((dailyUsage.generationsUsed / limit) * 100, 100);
+
+    return (
+      <Paper
+        sx={{
+          p: 3,
+          mb: 3,
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow: "var(--shadow-soft)",
+          background:
+            "linear-gradient(180deg, rgba(79,70,229,0.06), rgba(255,255,255,1))",
+        }}
+      >
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          justifyContent="space-between"
+          spacing={2}
+          sx={{ mb: 2 }}
+        >
+          <Box>
+            <Typography variant="overline" color="primary.main" fontWeight={700}>
+              Free Trial
+            </Typography>
+            <Typography variant="h6">
+              {trialDaysRemaining} day{trialDaysRemaining === 1 ? "" : "s"} left
+            </Typography>
+          </Box>
+          <Box>
+            <Typography variant="body2" color="text.secondary">
+              Generations today
+            </Typography>
+            <Typography variant="h6">
+              {dailyUsage.generationsUsed} / {TRIAL_DAILY_GENERATION_LIMIT}
+            </Typography>
+          </Box>
+        </Stack>
+
+        <LinearProgress
+          variant="determinate"
+          value={progress}
+          sx={{
+            height: 10,
+            borderRadius: 999,
+            mb: 1,
+            backgroundColor: "rgba(79, 70, 229, 0.12)",
+          }}
+        />
+
+        <Typography variant="body2" color="text.secondary">
+          {canGenerate
+            ? `${remaining} generation${remaining === 1 ? "" : "s"} left today. Subscribe anytime for higher limits.`
+            : `You've used today's ${TRIAL_DAILY_GENERATION_LIMIT} trial generations. Come back tomorrow or subscribe now.`}
+        </Typography>
+
+        {!canGenerate && (
+          <Button
+            component={Link}
+            href="/#pricing"
+            variant="contained"
+            sx={{ mt: 2 }}
+          >
+            Subscribe Now
+          </Button>
+        )}
+      </Paper>
+    );
+  }
+
+  const progress =
+    limit === null || limit === 0
+      ? 0
+      : Math.min((usage.flashcardsGenerated / limit) * 100, 100);
 
   return (
     <Paper

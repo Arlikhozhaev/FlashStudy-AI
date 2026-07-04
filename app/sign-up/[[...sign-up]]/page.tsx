@@ -8,7 +8,8 @@ export default function SignUpPage() {
         Create your account
       </Typography>
       <Typography align="center" color="text.secondary" sx={{ mb: 4 }}>
-        Start with a subscription plan and unlock AI flashcard generation.
+        Start your 7-day free trial with 2 AI generations per day. No credit
+        card required to begin.
       </Typography>
       <SignUp />
     </Container>

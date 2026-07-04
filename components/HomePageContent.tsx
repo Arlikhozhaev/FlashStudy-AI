@@ -80,7 +80,7 @@ export default function HomePageContent({
                 >
                   <AutoAwesomeRoundedIcon fontSize="small" />
                   <Typography variant="body2" fontWeight={600}>
-                    AI flashcards built for serious learners
+                    7-day free trial · 2 generations per day
                   </Typography>
                 </Box>
 
@@ -89,9 +89,8 @@ export default function HomePageContent({
                 </Typography>
 
                 <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.78)", maxWidth: 620 }}>
-                  FlashStudy AI combines production-grade SaaS architecture with
-                  a polished study experience — auth, subscriptions, secure
-                  storage, and AI generation out of the box.
+                  Start free for 7 days with 2 AI generations per day. Subscribe
+                  anytime for unlimited study power.
                 </Typography>
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
@@ -106,7 +105,7 @@ export default function HomePageContent({
                       "&:hover": { bgcolor: "rgba(255,255,255,0.92)" },
                     }}
                   >
-                    Start Studying
+                    Start Free Trial
                   </Button>
                   <Button
                     component={Link}
@@ -200,8 +199,9 @@ export default function HomePageContent({
             Simple, enforced pricing
           </Typography>
           <Typography align="center" color="text.secondary" sx={{ mb: 2, mx: "auto", maxWidth: 680 }}>
-            Basic includes 100 flashcards per billing period. Standard and Premium
-            include unlimited generation.
+            Every account starts with a 7-day free trial (2 generations per day).
+            After that, choose a plan — Basic includes 100 flashcards per month,
+            Standard and Premium are unlimited.
           </Typography>
 
           {checkoutError && (
