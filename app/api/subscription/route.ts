@@ -3,6 +3,9 @@ import { NextResponse } from "next/server";
 import { jsonError, jsonServerError } from "@/lib/api";
 import { getUserSubscriptionSummary } from "@/lib/subscription";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const { userId } = await auth();
 
@@ -15,6 +18,10 @@ export async function GET() {
     return NextResponse.json(summary);
   } catch (error) {
     console.error("Failed to fetch subscription:", error);
-    return jsonServerError("Unable to fetch subscription details");
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unable to fetch subscription details";
+    return jsonServerError(message);
   }
 }

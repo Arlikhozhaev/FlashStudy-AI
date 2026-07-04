@@ -13,6 +13,10 @@ import {
   generateFlashcardsSchema,
 } from "@/lib/validation";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 const ESTIMATED_FLASHCARDS_PER_GENERATION = 9;
 
 function getErrorMessage(error: unknown, fallback: string): string {
@@ -67,7 +71,7 @@ export async function POST(req: Request) {
       return jsonServerError(
         getErrorMessage(
           error,
-          "Unable to verify subscription. Check Firebase credentials in `.env.local`.",
+          "Unable to verify subscription. Check Firebase credentials in your Vercel environment variables.",
         ),
       );
     }
@@ -142,14 +146,18 @@ export async function POST(req: Request) {
       message.includes("environment configuration")
     ) {
       return jsonServerError(
-        "OpenAI is not configured. Add `OPENAI_API_KEY` to `.env.local`.",
+        "OpenAI is not configured. Add OPENAI_API_KEY in Vercel environment variables.",
       );
     }
 
-    if (message.includes("Firebase")) {
+    if (message.includes("Firebase") || message.includes("FIREBASE")) {
       return jsonServerError(
-        "Firebase is not configured correctly. Check `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` in `.env.local`.",
+        "Firebase is not configured correctly. Check FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in Vercel.",
       );
+    }
+
+    if (message.includes("Failed to initialize Firebase Admin")) {
+      return jsonServerError(message);
     }
 
     return jsonServerError(message);

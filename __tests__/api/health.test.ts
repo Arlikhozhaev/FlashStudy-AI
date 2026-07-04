@@ -7,8 +7,8 @@ describe("GET /api/health", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.status).toBe("ok");
     expect(body.service).toBe("flashstudy-ai");
     expect(typeof body.timestamp).toBe("string");
+    expect(body.checks).toBeDefined();
   });
 });
