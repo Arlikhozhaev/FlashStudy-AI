@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { jsonError, jsonServerError } from "@/lib/api";
+import { formatFirebaseError } from "@/lib/firebase/errors";
 import { getOpenAIClient, FLASHCARD_SYSTEM_PROMPT } from "@/lib/openai";
 import {
   assertCanGenerate,
@@ -12,6 +13,10 @@ import {
   flashcardsResponseSchema,
   generateFlashcardsSchema,
 } from "@/lib/validation";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const ESTIMATED_FLASHCARDS_PER_GENERATION = 9;
 
@@ -64,12 +69,7 @@ export async function POST(req: Request) {
       }
 
       console.error("Subscription check failed:", error);
-      return jsonServerError(
-        getErrorMessage(
-          error,
-          "Unable to verify subscription. Check Firebase credentials in `.env.local`.",
-        ),
-      );
+      return jsonServerError(formatFirebaseError(error));
     }
 
     const openai = getOpenAIClient();
@@ -142,14 +142,12 @@ export async function POST(req: Request) {
       message.includes("environment configuration")
     ) {
       return jsonServerError(
-        "OpenAI is not configured. Add `OPENAI_API_KEY` to `.env.local`.",
+        "OpenAI is not configured. Add OPENAI_API_KEY in Vercel environment variables.",
       );
     }
 
-    if (message.includes("Firebase")) {
-      return jsonServerError(
-        "Firebase is not configured correctly. Check `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` in `.env.local`.",
-      );
+    if (message.includes("Firebase") || message.includes("FIREBASE") || message.includes("Firestore")) {
+      return jsonServerError(formatFirebaseError(error));
     }
 
     return jsonServerError(message);
