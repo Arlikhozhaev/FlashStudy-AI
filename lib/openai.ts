@@ -1,7 +1,18 @@
-import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import OpenAI from "openai";
+import { getServerEnv } from "@/lib/env";
 
-const systemPrompt = `You are a flashcard creator. Your goal is to create concise and effective flashcards, following these guidelines:
+let openaiClient: OpenAI | null = null;
+
+export function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    const { OPENAI_API_KEY } = getServerEnv();
+    openaiClient = new OpenAI({ apiKey: OPENAI_API_KEY });
+  }
+
+  return openaiClient;
+}
+
+export const FLASHCARD_SYSTEM_PROMPT = `You are a flashcard creator. Your goal is to create concise and effective flashcards, following these guidelines:
 1. Ensure each flashcard contains only essential information. Avoid lengthy explanations and focus on core concepts or key facts.
 2. Use clear and straightforward language. The question should be precise, and the answer should be direct and unambiguous.
 3. Tailor the content to the specific subject or topic. Ensure that each flashcard addresses a single concept or piece of information.
@@ -17,32 +28,7 @@ const systemPrompt = `You are a flashcard creator. Your goal is to create concis
 Return in the following JSON format:
 {
     "flashcards": [{
-        "front": str,
-        "back": str
+        "front": "string",
+        "back": "string"
     }]
 }`;
-
-export async function POST(req) {
-    const openai = new OpenAI({ apiKey: process.env.OPEN_API_KEY });
-    const data = await req.text();
-    
-    try {
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo', // Ensure you use the correct model name
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: data }
-            ]
-        });
-
-        const responseContent = completion.choices[0].message.content;
-        console.log('Completion Response:', responseContent);
-
-        const flashcards = JSON.parse(responseContent);
-
-        return NextResponse.json(flashcards); // Ensure this matches your expected response format
-    } catch (error) {
-        console.error('API Error:', error);
-        return NextResponse.json({ error: 'Failed to generate flashcards.' }, { status: 500 });
-    }
-}
