@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { jsonError, jsonServerError } from "@/lib/api";
+import { formatFirebaseError } from "@/lib/firebase/errors";
 import { getOpenAIClient, FLASHCARD_SYSTEM_PROMPT } from "@/lib/openai";
 import {
   assertCanGenerate,
@@ -68,12 +69,7 @@ export async function POST(req: Request) {
       }
 
       console.error("Subscription check failed:", error);
-      return jsonServerError(
-        getErrorMessage(
-          error,
-          "Unable to verify subscription. Check Firebase credentials in your Vercel environment variables.",
-        ),
-      );
+      return jsonServerError(formatFirebaseError(error));
     }
 
     const openai = getOpenAIClient();
@@ -150,14 +146,8 @@ export async function POST(req: Request) {
       );
     }
 
-    if (message.includes("Firebase") || message.includes("FIREBASE")) {
-      return jsonServerError(
-        "Firebase is not configured correctly. Check FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in Vercel.",
-      );
-    }
-
-    if (message.includes("Failed to initialize Firebase Admin")) {
-      return jsonServerError(message);
+    if (message.includes("Firebase") || message.includes("FIREBASE") || message.includes("Firestore")) {
+      return jsonServerError(formatFirebaseError(error));
     }
 
     return jsonServerError(message);
