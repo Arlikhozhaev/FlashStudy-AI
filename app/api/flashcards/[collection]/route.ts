@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { jsonError, jsonServerError } from "@/lib/api";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDbAsync } from "@/lib/firebase/admin";
 
 interface RouteContext {
   params: {
@@ -23,7 +23,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
   }
 
   try {
-    const db = getAdminDb();
+    const db = await getAdminDbAsync();
     const snapshot = await db
       .collection("users")
       .doc(userId)

@@ -1,5 +1,5 @@
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDbAsync } from "@/lib/firebase/admin";
 import {
   createTrialWindow,
   getPlanLimit,
@@ -188,7 +188,7 @@ export function buildSubscriptionSummary(
 }
 
 async function ensureUserTrial(userId: string): Promise<void> {
-  const db = getAdminDb();
+  const db = await getAdminDbAsync();
   const userRef = db.collection("users").doc(userId);
   const userDoc = await userRef.get();
   const subscription = normalizeSubscription(userDoc.data());
@@ -216,7 +216,7 @@ export async function getUserSubscriptionSummary(
 ): Promise<SubscriptionSummary> {
   await ensureUserTrial(userId);
 
-  const db = getAdminDb();
+  const db = await getAdminDbAsync();
   const userDoc = await db.collection("users").doc(userId).get();
   const subscription = normalizeSubscription(userDoc.data());
   const trial = normalizeTrial(userDoc.data());
@@ -270,7 +270,7 @@ export async function recordGenerationUsage(
   flashcardsGenerated: number,
   summary: SubscriptionSummary,
 ): Promise<void> {
-  const db = getAdminDb();
+  const db = await getAdminDbAsync();
   const userRef = db.collection("users").doc(userId);
 
   if (summary.accessMode === "free_trial") {
@@ -330,7 +330,7 @@ export async function upsertUserSubscription(
     status: SubscriptionStatus;
   },
 ): Promise<void> {
-  const db = getAdminDb();
+  const db = await getAdminDbAsync();
   const userRef = db.collection("users").doc(userId);
   const userDoc = await userRef.get();
   const existingSubscription = normalizeSubscription(userDoc.data());
