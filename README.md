@@ -7,6 +7,16 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions)](.github/workflows/ci.yml)
 
+<p align="center">
+  <img src="./docs/screenshots/landing.png" alt="FlashStudy AI landing page" width="720" />
+</p>
+
+<p align="center">
+  <img src="./docs/screenshots/generate.png" alt="FlashStudy AI generate page" width="360" />
+  &nbsp;
+  <img src="./docs/screenshots/sign-in.png" alt="FlashStudy AI sign in" width="360" />
+</p>
+
 ---
 
 ## Impact (Google XYZ)
