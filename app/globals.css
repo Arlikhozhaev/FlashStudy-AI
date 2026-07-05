@@ -62,3 +62,12 @@ a {
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
+
+.auth-shell .cl-rootBox,
+.auth-shell .cl-cardBox {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+}
