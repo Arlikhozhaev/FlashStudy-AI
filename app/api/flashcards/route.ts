@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { jsonError, jsonServerError } from "@/lib/api";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDbAsync } from "@/lib/firebase/admin";
 import { saveCollectionSchema, flashcardSchema } from "@/lib/validation";
 import type { FlashcardCollection } from "@/types/flashcard";
 
@@ -13,7 +13,7 @@ export async function GET() {
   }
 
   try {
-    const db = getAdminDb();
+    const db = await getAdminDbAsync();
     const userDoc = await db.collection("users").doc(userId).get();
     const collections = (userDoc.data()?.flashcards ?? []) as FlashcardCollection[];
 
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   const { name, flashcards } = parsedBody.data;
 
   try {
-    const db = getAdminDb();
+    const db = await getAdminDbAsync();
     const userRef = db.collection("users").doc(userId);
     const userDoc = await userRef.get();
     const collections = (userDoc.data()?.flashcards ?? []) as FlashcardCollection[];
