@@ -75,6 +75,7 @@ export async function POST(req: Request) {
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
+      temperature: 0.4,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: FLASHCARD_SYSTEM_PROMPT },

@@ -1,10 +1,11 @@
 "use client";
 
+import FlipRoundedIcon from "@mui/icons-material/FlipRounded";
 import {
   Box,
-  CardActionArea,
-  CardContent,
+  Chip,
   Grid,
+  Paper,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -17,6 +18,8 @@ interface FlashcardGridProps {
     index: number,
   ) => string | number;
 }
+
+const CARD_MIN_HEIGHT = 240;
 
 export default function FlashcardGrid({
   flashcards,
@@ -35,84 +38,163 @@ export default function FlashcardGrid({
     <Grid container spacing={3}>
       {flashcards.map((flashcard, index) => {
         const key = getKey(flashcard, index);
+        const isFlipped = Boolean(flipped[key]);
 
         return (
           <Grid item xs={12} sm={6} md={4} key={key}>
-            <CardActionArea
+            <Paper
+              elevation={0}
               onClick={() => handleCardClick(key)}
               sx={{
-                borderRadius: 4,
-                overflow: "hidden",
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: "divider",
                 boxShadow: "var(--shadow-soft)",
-                transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                cursor: "pointer",
+                overflow: "hidden",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
                 "&:hover": {
-                  transform: "translateY(-4px)",
+                  transform: "translateY(-3px)",
                   boxShadow: "var(--shadow-card)",
                 },
+                "&:focus-visible": {
+                  outline: "2px solid",
+                  outlineColor: "primary.main",
+                  outlineOffset: 2,
+                },
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Flashcard ${index + 1}. ${isFlipped ? "Answer" : "Question"}: ${isFlipped ? flashcard.back : flashcard.front}. Press to flip.`}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  handleCardClick(key);
+                }
               }}
             >
-              <CardContent sx={{ p: 0 }}>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1.25,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 1,
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: "background.default",
+                }}
+              >
+                <Chip
+                  size="small"
+                  label={isFlipped ? "Answer" : "Question"}
+                  color={isFlipped ? "secondary" : "primary"}
+                  variant="outlined"
+                  sx={{ fontWeight: 600 }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  {index + 1} / {flashcards.length}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  perspective: "1200px",
+                  minHeight: CARD_MIN_HEIGHT,
+                  bgcolor: isFlipped
+                    ? "rgba(6, 182, 212, 0.06)"
+                    : "rgba(79, 70, 229, 0.05)",
+                }}
+              >
                 <Box
                   sx={{
-                    perspective: "1200px",
-                    minHeight: 220,
-                    background:
-                      "linear-gradient(135deg, rgba(79,70,229,0.08), rgba(6,182,212,0.08))",
-                    "& > div": {
-                      transform: flipped[key]
-                        ? "rotateY(180deg)"
-                        : "rotateY(0deg)",
-                      transition: "transform 0.6s",
-                      transformStyle: "preserve-3d",
-                      position: "relative",
-                      width: "100%",
-                      minHeight: 220,
-                    },
+                    transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                    transition: "transform 0.55s ease",
+                    transformStyle: "preserve-3d",
+                    position: "relative",
+                    width: "100%",
+                    minHeight: CARD_MIN_HEIGHT,
                   }}
                 >
-                  <div>
-                    <div
-                      style={{
-                        backfaceVisibility: "hidden",
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        padding: "24px",
+                  <Box
+                    sx={{
+                      backfaceVisibility: "hidden",
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      px: 2.5,
+                      py: 3,
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      align="center"
+                      fontWeight={600}
+                      sx={{
+                        lineHeight: 1.5,
+                        wordBreak: "break-word",
                       }}
                     >
-                      <Typography variant="h6" align="center" fontWeight={700}>
-                        {flashcard.front}
-                      </Typography>
-                    </div>
-                    <div
-                      style={{
-                        transform: "rotateY(180deg)",
-                        backfaceVisibility: "hidden",
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        padding: "24px",
-                        background:
-                          "linear-gradient(135deg, rgba(79,70,229,0.16), rgba(6,182,212,0.12))",
+                      {flashcard.front}
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      transform: "rotateY(180deg)",
+                      backfaceVisibility: "hidden",
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      px: 2.5,
+                      py: 3,
+                      overflowY: "auto",
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      align="center"
+                      color="primary.dark"
+                      sx={{
+                        lineHeight: 1.6,
+                        fontWeight: 500,
+                        wordBreak: "break-word",
                       }}
                     >
-                      <Typography variant="h6" align="center" color="primary" fontWeight={700}>
-                        {flashcard.back}
-                      </Typography>
-                    </div>
-                  </div>
+                      {flashcard.back}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box sx={{ px: 2, py: 1.5 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Tap to flip
-                  </Typography>
-                </Box>
-              </CardContent>
-            </CardActionArea>
+              </Box>
+
+              <Box
+                sx={{
+                  px: 2.5,
+                  py: 1.5,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 0.75,
+                  borderTop: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: "background.default",
+                }}
+              >
+                <FlipRoundedIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ letterSpacing: 0.2, fontWeight: 500 }}
+                >
+                  Tap to flip
+                </Typography>
+              </Box>
+            </Paper>
           </Grid>
         );
       })}
